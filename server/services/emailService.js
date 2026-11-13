@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Make sure to add RESEND_API_KEY to your .env file
-const resend = new Resend(process.env.RESEND_API_KEY);
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 /**
  * Sends an appointment reminder email using Resend
@@ -24,6 +24,10 @@ export const sendReminderEmail = async ({
   time,
   doctorName,
 }) => {
+  if (!resend) {
+    console.warn("[EmailService] RESEND_API_KEY is not configured in .env. Skipping email notification.");
+    return { skipped: true, reason: "RESEND_API_KEY missing" };
+  }
   try {
     // Resend free tier/testing restriction: can only send to verified owner email
     const recipient = process.env.NODE_ENV === "production" 

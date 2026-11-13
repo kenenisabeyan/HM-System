@@ -1,6 +1,9 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import path from "path";
+import fs from "fs";
+import { fileURLToPath } from "url";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import availabilityRoutes from "./routes/availabilityRoutes.js";
@@ -12,7 +15,13 @@ import medicalRecordRoutes from "./routes/medicalRecordRoutes.js";
 import prescriptionRoutes from "./routes/prescriptionRoutes.js";
 import { initCronJobs } from "./jobs/reminderJob.js";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Load environment variables from server/.env and root .env
+dotenv.config({ path: path.resolve(__dirname, ".env") });
 dotenv.config();
+
 connectDB();
 
 const app = express();
@@ -25,7 +34,12 @@ const allowedOrigins = [
   process.env.CLIENT_URL,
   "https://hospital-management-system-endrias.vercel.app",
   "http://localhost:5173",
+  "http://localhost:4173",
+  "http://localhost:5000",
   "http://localhost:3000",
+  "http://127.0.0.1:5173",
+  "http://127.0.0.1:4173",
+  "http://127.0.0.1:5000",
 ]
   .filter(Boolean)
   .map((origin) => origin.replace(/\/$/, "")); // Remove trailing slashes
@@ -56,9 +70,25 @@ app.use("/api/doctors", doctorRoutes);
 app.use("/api/medical-records", medicalRecordRoutes);
 app.use("/api/prescriptions", prescriptionRoutes);
 
-app.get("/", (req, res) => {
-  res.send("API is running...");
-});
+// Production Static Assets & Client-side Routing Fallback
+const clientDistPath = path.resolve(__dirname, "../client/dist");
+if (fs.existsSync(clientDistPath)) {
+  app.use(express.static(clientDistPath));
+
+  app.use((req, res, next) => {
+    if (req.path.startsWith("/api")) {
+      return res.status(404).json({ message: "API route not found" });
+    }
+    if (req.method === "GET") {
+      return res.sendFile(path.join(clientDistPath, "index.html"));
+    }
+    next();
+  });
+} else {
+  app.get("/", (req, res) => {
+    res.send("API is running...");
+  });
+}
 
 // Global Error Handler
 app.use((err, req, res, next) => {

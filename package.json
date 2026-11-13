@@ -3,21 +3,24 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
     "client": "npm run dev --prefix client",
     "server": "npm run dev --prefix server",
-    "dev": "concurrently \"npm run server\" \"npm run client\""
+    "build": "npm run build --prefix client",
+    "preview": "npm run preview --prefix client",
+    "start": "node server/server.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/EndriasEshetu/Web-Team-Project.git"
+    "url": "git+https://github.com/kenenisabeyan/HM-System.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/EndriasEshetu/Web-Team-Project/issues"
+    "url": "https://github.com/kenenisabeyan/HM-System/issues"
   },
-  "homepage": "https://github.com/EndriasEshetu/Web-Team-Project#readme",
+  "homepage": "https://github.com/kenenisabeyan/HM-System#readme",
   "description": "",
   "devDependencies": {
     "@tailwindcss/vite": "^4.2.4",
