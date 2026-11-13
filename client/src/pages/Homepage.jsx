@@ -63,7 +63,7 @@ const Homepage = () => {
 
                   <Link
                     to="/register"
-                    className="w-full sm:w-auto px-8 py-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold shadow-lg shadow-blue-600/20 transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-2 group"
+                    className="w-full sm:w-auto px-8 py-4 rounded-xl bg-slate-800/90 hover:bg-slate-700/90 text-white font-extrabold border border-slate-700/80 hover:border-teal-500/40 shadow-lg shadow-black/20 transition-all duration-300 hover:-translate-y-0.5 flex items-center justify-center gap-2 group"
                   >
                     <CheckCircle size={18} />
                     Register

@@ -252,7 +252,7 @@ const Register = () => {
             <button
               type="submit"
               disabled={registerMutation.isPending}
-              className="w-full py-3.5 font-extrabold text-white bg-blue-600 rounded-xl hover:bg-blue-500 focus:outline-none focus:ring-4 focus:ring-blue-600/25 active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100 transition-all shadow-lg shadow-blue-600/10"
+              className="w-full py-3.5 font-extrabold text-slate-950 bg-teal-500 rounded-xl hover:bg-teal-400 focus:outline-none focus:ring-4 focus:ring-teal-500/20 active:scale-[0.98] disabled:opacity-70 disabled:active:scale-100 transition-all shadow-lg shadow-teal-500/10"
             >
               {registerMutation.isPending ? "Registering..." : "Register"}
             </button>
