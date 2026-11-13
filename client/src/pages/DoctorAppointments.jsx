@@ -5,15 +5,14 @@ import {
 } from "../hooks/useDoctor";
 import StatusBadge from "../components/StatusBadge";
 import { 
-  Search, 
   Calendar, 
   Filter, 
   CheckCircle, 
   User, 
   ClipboardList, 
   FilePlus, 
-  MoreVertical,
-  ChevronRight
+  Clock,
+  RotateCcw
 } from "lucide-react";
 import PatientInfoModal from "../components/PatientInfoModal";
 import MedicalRecordForm from "../components/MedicalRecordForm";
@@ -44,36 +43,43 @@ const DoctorAppointments = () => {
     }
   };
 
-  if (isError) return <div className="text-center py-20 text-red-400 font-medium">Failed to load appointments.</div>;
+  if (isError) {
+    return (
+      <div className="text-center py-20 text-rose-400 bg-rose-500/5 border border-rose-500/20 rounded-2xl p-8">
+        Failed to load appointments.
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-white tracking-wide">Manage Appointments</h1>
-          <p className="text-sm text-gray-400 mt-1">Review and manage your patient consultations</p>
-        </div>
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <div>
+        <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+          <Calendar className="text-teal-400" size={28} />
+          Clinical Appointments
+        </h1>
+        <p className="text-sm text-slate-400 mt-1">Review schedules, complete consultations, and issue records</p>
       </div>
 
-      {/* Filters */}
-      <div className="bg-[#1f2937] p-4 rounded-xl border border-gray-800 shadow-xl flex flex-wrap gap-4 items-center">
-        <div className="flex items-center gap-2 bg-[#111827] px-3 py-2 rounded-lg border border-gray-700 flex-1 min-w-[200px]">
-          <Calendar size={18} className="text-gray-500" />
+      {/* Filters Bar */}
+      <div className="bg-[#0e172c]/90 p-4 rounded-2xl border border-slate-800/80 shadow-xl flex flex-wrap gap-4 items-center backdrop-blur-sm">
+        <div className="flex items-center gap-2.5 bg-[#090f1d] px-3.5 py-2.5 rounded-xl border border-slate-700/80 flex-1 min-w-[220px]">
+          <Calendar size={18} className="text-teal-400" />
           <input
             type="date"
             name="date"
             value={filters.date}
             onChange={handleFilterChange}
-            className="bg-transparent border-none text-gray-200 text-sm focus:outline-none w-full"
+            className="bg-transparent border-none text-slate-100 text-sm focus:outline-none w-full"
           />
         </div>
-        <div className="flex items-center gap-2 bg-[#111827] px-3 py-2 rounded-lg border border-gray-700 w-full sm:w-48">
-          <Filter size={18} className="text-gray-500" />
+        <div className="flex items-center gap-2.5 bg-[#090f1d] px-3.5 py-2.5 rounded-xl border border-slate-700/80 w-full sm:w-56">
+          <Filter size={18} className="text-teal-400" />
           <select
             name="status"
             value={filters.status}
             onChange={handleFilterChange}
-            className="bg-[#111827] border-none text-gray-200 text-sm focus:outline-none w-full"
+            className="bg-[#090f1d] border-none text-slate-100 text-sm focus:outline-none w-full cursor-pointer"
           >
             <option value="">All Statuses</option>
             <option value="Pending">Pending</option>
@@ -84,57 +90,59 @@ const DoctorAppointments = () => {
         </div>
         <button 
           onClick={() => setFilters({ date: "", status: "" })}
-          className="text-xs text-gray-500 hover:text-white transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-teal-300 transition-colors px-3 py-2 rounded-lg hover:bg-slate-800/60"
         >
+          <RotateCcw size={14} />
           Reset Filters
         </button>
       </div>
 
       {/* Appointments List */}
-      <div className="bg-[#1f2937] rounded-xl border border-gray-800 shadow-xl overflow-hidden">
+      <div className="bg-[#0e172c]/90 rounded-2xl border border-slate-800/80 shadow-xl overflow-hidden backdrop-blur-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left">
-            <thead className="bg-[#1a2332] text-gray-400 text-xs uppercase tracking-wider">
+            <thead className="bg-[#090f1d] text-slate-400 text-xs uppercase tracking-wider border-b border-slate-800/80">
               <tr>
                 <th className="px-6 py-4 font-semibold">Patient</th>
                 <th className="px-6 py-4 font-semibold">Date & Time</th>
                 <th className="px-6 py-4 font-semibold">Status</th>
-                <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                <th className="px-6 py-4 font-semibold text-right">Clinical Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800">
+            <tbody className="divide-y divide-slate-800/80">
               {isLoading ? (
                 <tr>
-                  <td colSpan="4" className="px-6 py-12 text-center text-gray-500">Loading appointments...</td>
+                  <td colSpan="4" className="px-6 py-16 text-center text-slate-400 text-sm">Loading appointments...</td>
                 </tr>
               ) : appointments.length === 0 ? (
                 <tr>
-                  <td colSpan="4" className="px-6 py-12 text-center text-gray-500 text-sm">No appointments found matching your filters.</td>
+                  <td colSpan="4" className="px-6 py-16 text-center text-slate-400 text-sm">No appointments found matching your filters.</td>
                 </tr>
               ) : (
                 appointments.map((appt) => (
-                  <tr key={appt._id} className="hover:bg-white/5 transition-colors group">
+                  <tr key={appt._id} className="hover:bg-slate-800/40 transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-bold">
-                          {appt.patientId?.name?.[0].toUpperCase()}
+                        <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-300 font-bold text-sm">
+                          {appt.patientId?.name?.[0]?.toUpperCase() || "P"}
                         </div>
                         <div>
-                          <p className="font-bold text-white text-sm">{appt.patientId?.name}</p>
+                          <p className="font-semibold text-white text-sm">{appt.patientId?.name || "Patient"}</p>
                           <button 
                             onClick={() => setSelectedPatientId(appt.patientId?._id)}
-                            className="text-[10px] text-emerald-500 hover:underline flex items-center gap-1 mt-0.5"
+                            className="text-[11px] text-teal-400 hover:text-teal-300 hover:underline flex items-center gap-1 mt-0.5 transition-colors font-medium"
                           >
-                            <User size={10} /> View Profile
+                            <User size={11} /> Clinical Details
                           </button>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <p className="text-sm text-gray-300 font-medium">
+                      <p className="text-sm text-slate-200 font-medium">
                         {new Date(appt.appointmentDateTime).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                       </p>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-slate-400 mt-0.5 flex items-center gap-1">
+                        <Clock size={12} className="text-teal-400" />
                         {new Date(appt.appointmentDateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </p>
                     </td>
@@ -147,35 +155,34 @@ const DoctorAppointments = () => {
                           <button
                             onClick={() => handleComplete(appt._id)}
                             disabled={completeMutation.isPending}
-                            className="p-2 text-emerald-500 hover:bg-emerald-500/10 rounded-lg transition-all border border-transparent hover:border-emerald-500/20"
-                            title="Mark as Completed"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-300 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 rounded-xl transition-all"
+                            title="Mark Consultation as Completed"
                           >
-                            <CheckCircle size={18} />
+                            <CheckCircle size={14} />
+                            Complete
                           </button>
                         )}
                         
                         {appt.status === "Completed" && (
-                          <>
+                          <div className="flex items-center gap-1.5">
                             <button
                               onClick={() => setMedicalRecordAppt(appt)}
-                              className="p-2 text-blue-400 hover:bg-blue-400/10 rounded-lg transition-all border border-transparent hover:border-blue-400/20"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-cyan-300 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 rounded-xl transition-all"
                               title="Add Medical Record"
                             >
-                              <ClipboardList size={18} />
+                              <ClipboardList size={13} />
+                              Record
                             </button>
                             <button
                               onClick={() => setPrescriptionAppt(appt)}
-                              className="p-2 text-purple-400 hover:bg-purple-400/10 rounded-lg transition-all border border-transparent hover:border-purple-400/20"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-violet-300 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 rounded-xl transition-all"
                               title="Issue Prescription"
                             >
-                              <FilePlus size={18} />
+                              <FilePlus size={13} />
+                              Prescribe
                             </button>
-                          </>
+                          </div>
                         )}
-                        <div className="h-4 w-[1px] bg-gray-800 mx-1"></div>
-                        <button className="p-2 text-gray-500 hover:text-white transition-colors">
-                          <ChevronRight size={18} />
-                        </button>
                       </div>
                     </td>
                   </tr>
