@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Pencil, Search, X, Trash2 } from "lucide-react";
+import { Pencil, Search, X, Trash2, Users } from "lucide-react";
 import { useAllPatients, useUpdatePatient, useDeletePatient } from "../hooks/useAdmin";
 
 const emptyForm = {
@@ -48,162 +48,159 @@ const ManagePatients = () => {
     setIsModalOpen(true);
   };
 
-  const handleSubmit = (event) => {
-    event.preventDefault();
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!editingPatient) return;
 
     updateMutation.mutate(
       {
         id: editingPatient._id,
-        age: form.age === "" ? undefined : Number(form.age),
-        gender: form.gender,
-        bloodGroup: form.bloodGroup,
-        phone: form.phone,
-        address: form.address,
+        payload: {
+          age: form.age === "" ? undefined : Number(form.age),
+          gender: form.gender,
+          bloodGroup: form.bloodGroup,
+          phone: form.phone,
+          address: form.address,
+        },
       },
       {
-        onSuccess: () => {
-          setIsModalOpen(false);
-          setEditingPatient(null);
-          setForm(emptyForm);
-        },
-        onError: (error) => {
-          alert(error.response?.data?.message || "Failed to update patient");
-        },
+        onSuccess: () => setIsModalOpen(false),
       },
     );
   };
 
   const handleDelete = (patient) => {
+    const name = patient.userId?.name || "this patient";
     if (
       window.confirm(
-        `Are you sure you want to PERMANENTLY delete patient ${patient.userId?.name || "this patient"} and their account? This action cannot be undone.`
+        `Are you sure you want to delete ${name}? This will remove all their appointments and records permanently!`,
       )
     ) {
-      deleteMutation.mutate(patient._id, {
-        onError: (error) => {
-          alert(error.response?.data?.message || "Failed to delete patient");
-        },
-      });
+      deleteMutation.mutate(patient._id);
     }
   };
 
   if (isLoading) {
     return (
-      <div className="text-center py-20 text-gray-400">Loading patients...</div>
+      <div className="flex flex-col items-center justify-center py-24 text-slate-400">
+        <div className="w-10 h-10 border-2 border-teal-500/30 border-t-teal-400 rounded-full animate-spin mb-4" />
+        <p className="text-sm font-medium">Loading patient directory...</p>
+      </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="text-center py-20 text-red-400">
+      <div className="text-center py-20 text-rose-400 bg-rose-500/5 border border-rose-500/20 rounded-2xl p-8">
         Failed to load patients.
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-wide">
+          <h1 className="text-3xl font-extrabold text-white tracking-tight flex items-center gap-3">
+            <Users className="text-teal-400" size={28} />
             Manage Patients
           </h1>
-          <p className="text-sm text-gray-400 mt-1">
-            Search and edit patient account details
+          <p className="text-sm text-slate-400 mt-1">
+            Search patient directory, review demographics, and maintain clinical accounts
           </p>
         </div>
-        <div className="text-sm text-gray-400">
-          {filteredPatients.length} patients
+        <div className="text-xs font-semibold px-3 py-1.5 rounded-xl bg-teal-500/10 text-teal-300 border border-teal-500/20 w-fit">
+          {filteredPatients.length} Registered Patients
         </div>
       </div>
 
-      <div className="bg-[#1f2937] border border-gray-800 rounded-2xl p-4 shadow-xl">
+      {/* Search Bar */}
+      <div className="bg-[#0e172c]/90 border border-slate-800/80 rounded-2xl p-4 shadow-xl backdrop-blur-sm">
         <div className="relative max-w-xl">
           <Search
             size={18}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500"
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500"
           />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name, email, patient ID, phone, or blood group"
-            className="w-full bg-[#111827] border border-gray-700 rounded-xl pl-10 pr-4 py-3 text-sm text-gray-200 outline-none focus:border-emerald-500"
+            placeholder="Search by name, email, patient ID, phone, or blood group..."
+            className="w-full bg-[#090f1d] border border-slate-700/80 rounded-xl pl-10 pr-4 py-3 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
           />
         </div>
       </div>
 
-      <div className="bg-[#1f2937] rounded-2xl shadow-xl border border-gray-800 overflow-hidden">
+      {/* Patients Table */}
+      <div className="bg-[#0e172c]/90 rounded-2xl shadow-xl border border-slate-800/80 overflow-hidden backdrop-blur-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead>
-              <tr className="bg-[#111827] border-b border-gray-800">
-                <th className="px-6 py-4 font-semibold text-gray-300">
-                  Patient
-                </th>
-                <th className="px-6 py-4 font-semibold text-gray-300">
-                  Patient ID
-                </th>
-                <th className="px-6 py-4 font-semibold text-gray-300">Phone</th>
-                <th className="px-6 py-4 font-semibold text-gray-300">
-                  Blood Group
-                </th>
-                <th className="px-6 py-4 text-right font-semibold text-gray-300">
-                  Actions
-                </th>
+              <tr className="bg-[#090f1d] border-b border-slate-800/80 text-xs uppercase tracking-wider text-slate-400">
+                <th className="px-6 py-4 font-semibold">Patient Profile</th>
+                <th className="px-6 py-4 font-semibold">Hospital ID</th>
+                <th className="px-6 py-4 font-semibold">Contact Phone</th>
+                <th className="px-6 py-4 font-semibold">Blood Group</th>
+                <th className="px-6 py-4 text-right font-semibold">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-800">
+            <tbody className="divide-y divide-slate-800/80">
               {filteredPatients.length === 0 ? (
                 <tr>
                   <td
                     colSpan="5"
-                    className="px-6 py-12 text-center text-gray-500"
+                    className="px-6 py-16 text-center text-slate-400 text-sm"
                   >
-                    No patients found.
+                    No matching patients found.
                   </td>
                 </tr>
               ) : (
                 filteredPatients.map((patient) => (
                   <tr
                     key={patient._id}
-                    className="hover:bg-white/5 transition-colors"
+                    className="hover:bg-slate-800/40 transition-colors"
                   >
                     <td className="px-6 py-4">
-                      <p className="font-medium text-white">
-                        {patient.userId?.name || "N/A"}
-                      </p>
-                      <p className="text-xs text-gray-500">
-                        {patient.userId?.email || "N/A"}
-                      </p>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-300 font-bold text-sm shrink-0">
+                          {patient.userId?.name?.[0]?.toUpperCase() || "P"}
+                        </div>
+                        <div>
+                          <p className="font-semibold text-white">
+                            {patient.userId?.name || "Patient"}
+                          </p>
+                          <p className="text-xs text-slate-400">
+                            {patient.userId?.email || ""}
+                          </p>
+                        </div>
+                      </div>
                     </td>
-                    <td className="px-6 py-4 text-gray-300">
+                    <td className="px-6 py-4 text-teal-400 font-mono text-xs font-semibold">
                       {patient.patientId || "N/A"}
                     </td>
-                    <td className="px-6 py-4 text-gray-400">
-                      {patient.phone || "N/A"}
+                    <td className="px-6 py-4 text-slate-300 text-xs">
+                      {patient.phone || "Not provided"}
                     </td>
                     <td className="px-6 py-4">
-                      <span className="inline-flex px-2.5 py-1 rounded-full text-xs border border-gray-700 text-gray-200 bg-[#111827]">
-                        {patient.bloodGroup || "N/A"}
+                      <span className="inline-flex px-2.5 py-0.5 rounded-full text-xs font-bold border border-teal-500/20 text-teal-300 bg-teal-500/10">
+                        {patient.bloodGroup || "Unknown"}
                       </span>
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="inline-flex items-center gap-2">
                         <button
                           onClick={() => openEdit(patient)}
-                          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg bg-[#111827] text-gray-200 border border-gray-700 hover:border-gray-500"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-slate-800 text-slate-300 border border-slate-700 hover:text-white hover:border-slate-600 transition-all"
                         >
-                          <Pencil size={14} />
+                          <Pencil size={13} />
                           Edit
                         </button>
                         <button
                           onClick={() => handleDelete(patient)}
                           disabled={deleteMutation.isPending}
-                          className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg bg-red-500/10 text-red-500 border border-red-500/20 hover:bg-red-500/20 disabled:opacity-50"
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20 hover:bg-rose-500/20 disabled:opacity-50 transition-all"
                           title="Delete Permanently"
                         >
-                          <Trash2 size={14} />
-                          Delete
+                          <Trash2 size={13} />
                         </button>
                       </div>
                     </td>
@@ -215,21 +212,22 @@ const ManagePatients = () => {
         </div>
       </div>
 
+      {/* Edit Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4 py-6">
-          <div className="w-full max-w-2xl bg-[#1f2937] border border-gray-700 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col">
-            <div className="px-6 py-4 border-b border-gray-800 flex items-center justify-between bg-[#111827]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-sm px-4 py-6">
+          <div className="w-full max-w-2xl bg-[#0d162b] border border-slate-800 rounded-2xl shadow-2xl overflow-hidden max-h-[90vh] flex flex-col animate-in fade-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-[#090f1d]">
               <div>
-                <h2 className="text-lg font-semibold text-white">
-                  Edit Patient
+                <h2 className="text-lg font-bold text-white tracking-tight">
+                  Edit Patient Details
                 </h2>
-                <p className="text-xs text-gray-400">
-                  Email and patient ID are read-only
+                <p className="text-xs text-slate-400">
+                  Update demographic and clinical emergency attributes
                 </p>
               </div>
               <button
                 onClick={() => setIsModalOpen(false)}
-                className="p-2 text-gray-400 hover:text-white rounded-lg hover:bg-white/5"
+                className="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800/60 transition-colors"
               >
                 <X size={18} />
               </button>
@@ -240,61 +238,59 @@ const ManagePatients = () => {
               className="p-6 space-y-4 overflow-y-auto"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <label className="space-y-2">
-                  <span className="text-sm text-gray-300">Full Name</span>
+                <label className="space-y-1.5">
+                  <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Patient Name</span>
                   <input
                     value={editingPatient?.userId?.name || ""}
                     readOnly
-                    className="w-full rounded-xl bg-[#111827] border border-gray-700 px-4 py-3 text-sm text-gray-400 outline-none"
+                    className="w-full rounded-xl bg-[#090f1d] border border-slate-700/80 px-4 py-2.5 text-sm text-slate-400 outline-none cursor-not-allowed"
                   />
                 </label>
-                <label className="space-y-2">
-                  <span className="text-sm text-gray-300">Email</span>
-                  <input
-                    value={editingPatient?.userId?.email || ""}
-                    readOnly
-                    className="w-full rounded-xl bg-[#111827] border border-gray-700 px-4 py-3 text-sm text-gray-400 outline-none"
-                  />
-                </label>
-                <label className="space-y-2">
-                  <span className="text-sm text-gray-300">Patient ID</span>
+
+                <label className="space-y-1.5">
+                  <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Hospital ID</span>
                   <input
                     value={editingPatient?.patientId || ""}
                     readOnly
-                    className="w-full rounded-xl bg-[#111827] border border-gray-700 px-4 py-3 text-sm text-gray-400 outline-none"
+                    className="w-full rounded-xl bg-[#090f1d] border border-slate-700/80 px-4 py-2.5 text-sm text-slate-400 outline-none font-mono cursor-not-allowed"
                   />
                 </label>
-                <label className="space-y-2">
-                  <span className="text-sm text-gray-300">Age</span>
+
+                <label className="space-y-1.5">
+                  <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Age</span>
                   <input
                     type="number"
                     value={form.age}
                     onChange={(e) => setForm({ ...form, age: e.target.value })}
-                    className="w-full rounded-xl bg-[#111827] border border-gray-700 px-4 py-3 text-sm text-gray-200 outline-none focus:border-emerald-500"
+                    placeholder="e.g. 32"
+                    className="w-full rounded-xl bg-[#090f1d] border border-slate-700/80 px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
                   />
                 </label>
-                <label className="space-y-2">
-                  <span className="text-sm text-gray-300">Gender</span>
+
+                <label className="space-y-1.5">
+                  <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Gender</span>
                   <select
                     value={form.gender}
                     onChange={(e) =>
                       setForm({ ...form, gender: e.target.value })
                     }
-                    className="w-full rounded-xl bg-[#111827] border border-gray-700 px-4 py-3 text-sm text-gray-200 outline-none focus:border-emerald-500 transition-all"
+                    className="w-full rounded-xl bg-[#090f1d] border border-slate-700/80 px-4 py-2.5 text-sm text-slate-200 outline-none focus:border-teal-500 cursor-pointer"
                   >
                     <option value="">Select Gender</option>
                     <option value="Male">Male</option>
                     <option value="Female">Female</option>
+                    <option value="Other">Other</option>
                   </select>
                 </label>
-                <label className="space-y-2">
-                  <span className="text-sm text-gray-300">Blood Group</span>
+
+                <label className="space-y-1.5">
+                  <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Blood Group</span>
                   <select
                     value={form.bloodGroup}
                     onChange={(e) =>
                       setForm({ ...form, bloodGroup: e.target.value })
                     }
-                    className="w-full rounded-xl bg-[#111827] border border-gray-700 px-4 py-3 text-sm text-gray-200 outline-none focus:border-emerald-500 transition-all"
+                    className="w-full rounded-xl bg-[#090f1d] border border-slate-700/80 px-4 py-2.5 text-sm text-slate-200 outline-none focus:border-teal-500 cursor-pointer"
                   >
                     <option value="">Select Blood Group</option>
                     <option value="A+">A+</option>
@@ -307,41 +303,45 @@ const ManagePatients = () => {
                     <option value="O-">O-</option>
                   </select>
                 </label>
-                <label className="space-y-2 md:col-span-2">
-                  <span className="text-sm text-gray-300">Phone</span>
+
+                <label className="space-y-1.5">
+                  <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Phone</span>
                   <input
                     value={form.phone}
                     onChange={(e) =>
                       setForm({ ...form, phone: e.target.value })
                     }
-                    className="w-full rounded-xl bg-[#111827] border border-gray-700 px-4 py-3 text-sm text-gray-200 outline-none focus:border-emerald-500"
+                    placeholder="+251 ..."
+                    className="w-full rounded-xl bg-[#090f1d] border border-slate-700/80 px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
                   />
                 </label>
-                <label className="space-y-2 md:col-span-2">
-                  <span className="text-sm text-gray-300">Address</span>
+
+                <label className="space-y-1.5 md:col-span-2">
+                  <span className="text-xs font-semibold text-slate-300 uppercase tracking-wider">Residential Address</span>
                   <textarea
-                    rows={4}
+                    rows={3}
                     value={form.address}
                     onChange={(e) =>
                       setForm({ ...form, address: e.target.value })
                     }
-                    className="w-full rounded-xl bg-[#111827] border border-gray-700 px-4 py-3 text-sm text-gray-200 outline-none focus:border-emerald-500 resize-none"
+                    placeholder="Street, City, Postal Code"
+                    className="w-full rounded-xl bg-[#090f1d] border border-slate-700/80 px-4 py-2.5 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all resize-none"
                   />
                 </label>
               </div>
 
-              <div className="flex flex-col sm:flex-row gap-3 pt-2">
+              <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-800/80">
                 <button
                   type="submit"
                   disabled={updateMutation.isPending}
-                  className="inline-flex items-center justify-center gap-2 rounded-xl bg-emerald-600 px-4 py-3 text-sm font-medium text-white hover:bg-emerald-500 disabled:opacity-50"
+                  className="flex-1 inline-flex items-center justify-center gap-2 rounded-xl bg-teal-600 px-5 py-3 text-sm font-semibold text-white hover:bg-teal-500 shadow-lg shadow-teal-600/25 disabled:opacity-50 transition-all"
                 >
                   Save Changes
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}
-                  className="rounded-xl bg-[#111827] border border-gray-700 px-4 py-3 text-sm font-medium text-gray-200 hover:border-gray-500"
+                  className="rounded-xl bg-slate-800/80 border border-slate-700 px-5 py-3 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800 transition-all"
                 >
                   Cancel
                 </button>
