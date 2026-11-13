@@ -7,35 +7,42 @@ import {
   CheckCircle2,
   XCircle,
   CircleDot,
+  ArrowUpRight,
 } from "lucide-react";
 import { useAdminDashboard } from "../hooks/useAdmin";
+import StatusBadge from "../components/StatusBadge";
 
 const statusMeta = {
-  Pending: { label: "Pending", color: "text-amber-400", icon: CircleDot },
-  Confirmed: { label: "Confirmed", color: "text-sky-400", icon: Clock3 },
+  Pending: { label: "Pending", color: "text-amber-400", bg: "bg-amber-500/10", border: "border-amber-500/20", icon: CircleDot },
+  Confirmed: { label: "Confirmed", color: "text-teal-400", bg: "bg-teal-500/10", border: "border-teal-500/20", icon: Clock3 },
   Completed: {
     label: "Completed",
     color: "text-emerald-400",
+    bg: "bg-emerald-500/10",
+    border: "border-emerald-500/20",
     icon: CheckCircle2,
   },
-  Cancelled: { label: "Cancelled", color: "text-red-400", icon: XCircle },
+  Cancelled: { label: "Cancelled", color: "text-rose-400", bg: "bg-rose-500/10", border: "border-rose-500/20", icon: XCircle },
 };
 
 const cardThemes = {
-  blue: {
-    bg: "bg-blue-500/10",
-    border: "border-blue-500/20",
-    text: "text-blue-400",
+  teal: {
+    bg: "bg-teal-500/10",
+    border: "border-teal-500/20",
+    text: "text-teal-400",
+    hover: "hover:border-teal-500/40",
+  },
+  cyan: {
+    bg: "bg-cyan-500/10",
+    border: "border-cyan-500/20",
+    text: "text-cyan-400",
+    hover: "hover:border-cyan-500/40",
   },
   emerald: {
     bg: "bg-emerald-500/10",
     border: "border-emerald-500/20",
     text: "text-emerald-400",
-  },
-  violet: {
-    bg: "bg-violet-500/10",
-    border: "border-violet-500/20",
-    text: "text-violet-400",
+    hover: "hover:border-emerald-500/40",
   },
 };
 
@@ -44,15 +51,16 @@ const AdminDashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="text-center py-20 text-gray-400">
-        Loading analytics...
+      <div className="flex flex-col items-center justify-center py-24 text-slate-400">
+        <div className="w-10 h-10 border-2 border-teal-500/30 border-t-teal-400 rounded-full animate-spin mb-4" />
+        <p className="text-sm font-medium">Loading clinical analytics...</p>
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="text-center py-20 text-red-400">
+      <div className="text-center py-20 text-rose-400 bg-rose-500/5 border border-rose-500/20 rounded-2xl p-8">
         Failed to load dashboard metrics.
       </div>
     );
@@ -70,38 +78,39 @@ const AdminDashboard = () => {
       value: data?.totalPatients || 0,
       helper: "Registered patient accounts",
       icon: Users,
-      accent: "blue",
+      accent: "teal",
       href: "/admin/patients",
     },
     {
       label: "Total Active Doctors",
       value: data?.activeDoctors || 0,
-      helper: `${data?.totalDoctors || 0} doctor records`,
+      helper: `${data?.totalDoctors || 0} registered medical staff`,
       icon: Stethoscope,
-      accent: "emerald",
+      accent: "cyan",
       href: "/admin/doctors",
     },
     {
       label: "Total Appointments",
       value: totalAppointments,
-      helper: "Across all appointment states",
+      helper: "Across all clinical workflows",
       icon: CalendarDays,
-      accent: "violet",
+      accent: "emerald",
       href: "/admin/appointments",
     },
   ];
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-2">
-        <h1 className="text-2xl font-bold text-white tracking-wide">
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex flex-col gap-1">
+        <h1 className="text-3xl font-extrabold text-white tracking-tight">
           Admin Dashboard
         </h1>
-        <p className="text-sm text-gray-400">
-          Live hospital activity at a glance
+        <p className="text-sm text-slate-400">
+          Live hospital operations, doctor availability, and appointment statistics
         </p>
       </div>
 
+      {/* Primary KPI Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {cards.map((card) => {
           const Icon = card.icon;
@@ -110,17 +119,20 @@ const AdminDashboard = () => {
             <Link
               key={card.label}
               to={card.href}
-              className="bg-[#1f2937] border border-gray-800 rounded-2xl p-6 shadow-xl hover:border-gray-700 transition-colors flex items-center justify-between gap-4"
+              className={`bg-[#0e172c]/90 border border-slate-800/80 rounded-2xl p-6 shadow-xl ${theme.hover} transition-all duration-300 flex items-center justify-between gap-4 group backdrop-blur-sm`}
             >
               <div>
-                <p className="text-sm text-gray-400 mb-1">{card.label}</p>
-                <p className="text-3xl font-bold text-white">{card.value}</p>
-                <p className="text-xs text-gray-500 mt-2">{card.helper}</p>
+                <p className="text-sm font-medium text-slate-400 mb-1">{card.label}</p>
+                <p className="text-3xl font-extrabold text-white tracking-tight">{card.value}</p>
+                <div className="flex items-center gap-1 text-xs text-slate-400 mt-2 group-hover:text-teal-400 transition-colors">
+                  <span>{card.helper}</span>
+                  <ArrowUpRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                </div>
               </div>
               <div
-                className={`p-4 rounded-2xl border ${theme.bg} ${theme.border}`}
+                className={`p-4 rounded-2xl border ${theme.bg} ${theme.border} group-hover:scale-105 transition-transform`}
               >
-                <Icon className={theme.text} size={30} />
+                <Icon className={theme.text} size={28} />
               </div>
             </Link>
           );
@@ -128,16 +140,15 @@ const AdminDashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-[#1f2937] border border-gray-800 rounded-2xl p-6 shadow-xl">
-          <div className="flex items-center justify-between mb-5">
-            <div>
-              <h2 className="text-lg font-semibold text-white">
-                Appointment Status
-              </h2>
-              <p className="text-sm text-gray-400">
-                Current workflow distribution
-              </p>
-            </div>
+        {/* Workflow Status Distribution */}
+        <div className="bg-[#0e172c]/90 border border-slate-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
+          <div className="mb-5">
+            <h2 className="text-lg font-bold text-white tracking-tight">
+              Appointment Status
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Current operational distribution
+            </p>
           </div>
           <div className="grid grid-cols-2 gap-4">
             {Object.entries(statusMeta).map(([status, meta]) => {
@@ -145,16 +156,16 @@ const AdminDashboard = () => {
               return (
                 <div
                   key={status}
-                  className="bg-[#111827] rounded-xl border border-gray-800 p-4 flex items-center gap-3"
+                  className="bg-[#090f1d] rounded-xl border border-slate-800/80 p-4 flex items-center gap-3.5 hover:border-slate-700/80 transition-colors"
                 >
-                  <div className={`p-2 rounded-lg bg-white/5 ${meta.color}`}>
+                  <div className={`p-2.5 rounded-xl border ${meta.bg} ${meta.border} ${meta.color}`}>
                     <Icon size={18} />
                   </div>
                   <div>
-                    <p className="text-xs uppercase tracking-wide text-gray-500">
+                    <p className="text-[11px] uppercase font-semibold tracking-wider text-slate-400">
                       {meta.label}
                     </p>
-                    <p className={`text-xl font-bold ${meta.color}`}>
+                    <p className={`text-2xl font-bold ${meta.color}`}>
                       {appointmentsByStatus[status] || 0}
                     </p>
                   </div>
@@ -164,34 +175,54 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        <div className="bg-[#1f2937] border border-gray-800 rounded-2xl p-6 shadow-xl">
-          <h2 className="text-lg font-semibold text-white mb-5">
-            Recent Doctor Registrations
-          </h2>
+        {/* Recent Doctor Registrations */}
+        <div className="bg-[#0e172c]/90 border border-slate-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
+          <div className="flex items-center justify-between mb-5">
+            <div>
+              <h2 className="text-lg font-bold text-white tracking-tight">
+                Recent Doctors
+              </h2>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Newly registered medical staff
+              </p>
+            </div>
+            <Link to="/admin/doctors" className="text-xs font-semibold text-teal-400 hover:text-teal-300 transition-colors">
+              View All
+            </Link>
+          </div>
           <div className="space-y-3">
             {(data?.recentDoctors || []).length === 0 ? (
-              <p className="text-sm text-gray-500 py-6 text-center">
-                No doctors found.
+              <p className="text-sm text-slate-400 py-8 text-center bg-[#090f1d] rounded-xl border border-dashed border-slate-800">
+                No doctors registered yet.
               </p>
             ) : (
-              data.recentDoctors.map((doctor) => (
+              data.recentDoctors.slice(0, 4).map((doctor) => (
                 <div
                   key={doctor._id}
-                  className="bg-[#111827] rounded-xl border border-gray-800 p-4 flex items-center justify-between gap-4"
+                  className="bg-[#090f1d] rounded-xl border border-slate-800/80 p-4 flex items-center justify-between gap-4 hover:border-slate-700/80 transition-colors"
                 >
-                  <div>
-                    <p className="text-white font-medium">
-                      {doctor.userId?.name || "Unknown Doctor"}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {doctor.userId?.email || "No email"}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {doctor.specialization || "No specialization"}
-                    </p>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-300 font-bold text-sm shrink-0">
+                      {doctor.userId?.name?.[0]?.toUpperCase() || "D"}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-white">
+                        Dr. {doctor.userId?.name || "Unknown Doctor"}
+                      </p>
+                      <p className="text-xs text-teal-400/90 font-medium">
+                        {doctor.specialization || "General Medicine"}
+                      </p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        {doctor.userId?.email || ""}
+                      </p>
+                    </div>
                   </div>
                   <span
-                    className={`text-xs px-2 py-1 rounded-full border ${doctor.isActive ? "text-emerald-400 border-emerald-500/20 bg-emerald-500/10" : "text-red-400 border-red-500/20 bg-red-500/10"}`}
+                    className={`text-xs px-2.5 py-1 rounded-full font-semibold border ${
+                      doctor.isActive 
+                        ? "text-emerald-400 border-emerald-500/20 bg-emerald-500/10" 
+                        : "text-rose-400 border-rose-500/20 bg-rose-500/10"
+                    }`}
                   >
                     {doctor.isActive ? "Active" : "Inactive"}
                   </span>
@@ -202,44 +233,51 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      <div className="bg-[#1f2937] border border-gray-800 rounded-2xl p-6 shadow-xl">
-        <h2 className="text-lg font-semibold text-white mb-5">
-          Recent Appointments
-        </h2>
+      {/* Recent Appointments */}
+      <div className="bg-[#0e172c]/90 border border-slate-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-sm">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <h2 className="text-lg font-bold text-white tracking-tight">
+              Recent Appointments
+            </h2>
+            <p className="text-xs text-slate-400 mt-0.5">
+              Latest scheduling across all departments
+            </p>
+          </div>
+          <Link to="/admin/appointments" className="text-xs font-semibold text-teal-400 hover:text-teal-300 transition-colors">
+            View All
+          </Link>
+        </div>
         <div className="space-y-3">
           {(data?.recentAppointments || []).length === 0 ? (
-            <p className="text-sm text-gray-500 py-6 text-center">
-              No appointments found.
+            <p className="text-sm text-slate-400 py-8 text-center bg-[#090f1d] rounded-xl border border-dashed border-slate-800">
+              No appointments scheduled yet.
             </p>
           ) : (
-            data.recentAppointments.map((appointment) => (
+            data.recentAppointments.slice(0, 5).map((appointment) => (
               <div
                 key={appointment._id}
-                className="bg-[#111827] rounded-xl border border-gray-800 p-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4"
+                className="bg-[#090f1d] rounded-xl border border-slate-800/80 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 hover:border-slate-700/80 transition-colors"
               >
                 <div>
-                  <p className="text-white font-medium">
-                    {appointment.patientId?.name || "Unknown Patient"}
+                  <p className="text-sm font-semibold text-white">
+                    {appointment.patientId?.name || "Patient"}
                   </p>
-                  <p className="text-xs text-gray-500">
-                    Dr. {appointment.doctorId?.name || "Unknown Doctor"}
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Attending: <span className="text-teal-400 font-medium">Dr. {appointment.doctorId?.name || "Staff"}</span>
                   </p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    {new Date(appointment.appointmentDateTime).toLocaleString(
-                      "en-US",
-                      {
-                        weekday: "short",
-                        month: "short",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                      },
-                    )}
+                  <p className="text-[11px] text-slate-400 mt-1 flex items-center gap-1.5">
+                    <CalendarDays size={13} className="text-teal-400" />
+                    {new Date(appointment.appointmentDateTime).toLocaleString("en-US", {
+                      weekday: "short",
+                      month: "short",
+                      day: "numeric",
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
                   </p>
                 </div>
-                <span className="text-xs font-medium px-3 py-1 rounded-full border border-gray-700 text-gray-200 w-fit">
-                  {appointment.status}
-                </span>
+                <StatusBadge status={appointment.status} />
               </div>
             ))
           )}
