@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Search, Filter, Calendar as CalendarIcon, User, ChevronRight, LayoutGrid, List } from "lucide-react";
+import { Search, Filter, Calendar as CalendarIcon, Stethoscope, ChevronRight, CheckCircle2, XCircle } from "lucide-react";
 import { useDoctors, useBookAppointment } from "../hooks/usePatient";
 import { usePublicAvailability } from "../hooks/useAvailability";
 
@@ -50,7 +50,6 @@ const BookingCalendar = () => {
     setSelectedDoctor(doctor);
     setSelectedDate(null);
     setSelectedTime(null);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSelectDate = (date) => {
@@ -61,20 +60,22 @@ const BookingCalendar = () => {
   const handleConfirmBooking = () => {
     if (!selectedDoctor || !selectedDate || !selectedTime) return;
 
-    const dateTimeString = `${selectedDate}T${selectedTime}:00`;
-    const appointmentDateTime = new Date(dateTimeString);
+    // Combine date and time
+    const [hours, minutes] = selectedTime.split(":");
+    const appointmentDateTime = new Date(selectedDate);
+    appointmentDateTime.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
 
     bookMutation.mutate(
       {
-        doctorId: selectedDoctor.userId?._id,
-        appointmentDateTime,
+        doctorId: selectedDoctor._id,
+        appointmentDateTime: appointmentDateTime.toISOString(),
         notes,
       },
       {
         onSuccess: () => {
           setTimeout(() => {
             navigate("/patient/appointments");
-          }, 2000);
+          }, 1500);
         },
       }
     );
@@ -89,39 +90,48 @@ const BookingCalendar = () => {
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 space-y-4">
-        <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin" />
-        <p className="text-gray-400 animate-pulse">Loading amazing doctors...</p>
+      <div className="flex flex-col items-center justify-center py-24 text-slate-400">
+        <div className="w-10 h-10 border-2 border-teal-500/30 border-t-teal-400 rounded-full animate-spin mb-4" />
+        <p className="text-sm font-medium">Finding available clinical specialists...</p>
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-8 text-center">
-        <p className="text-red-400 font-medium">Failed to load doctor availability. Please try again later.</p>
+      <div className="bg-rose-500/10 border border-rose-500/20 rounded-2xl p-8 text-center">
+        <p className="text-rose-400 font-semibold text-sm">Failed to load doctors directory.</p>
+        <button 
+          onClick={() => window.location.reload()} 
+          className="mt-4 px-5 py-2.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 text-xs font-semibold rounded-xl border border-rose-500/30 transition-all"
+        >
+          Retry
+        </button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8 pb-20">
+    <div className="space-y-8 animate-in fade-in duration-500">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">
-            Book an Appointment
-          </h1>
-          <p className="text-gray-400 mt-2 flex items-center gap-2">
-            {selectedDoctor ? (
+          <div className="flex items-center gap-2 text-xs font-semibold text-teal-400 uppercase tracking-wider mb-1">
+            <span>Clinical Booking</span>
+            {selectedDoctor && (
               <>
-                <span className="hover:text-emerald-400 cursor-pointer transition-colors" onClick={resetFlow}>Doctors</span>
-                <ChevronRight size={14} />
-                <span className="text-emerald-400 font-medium">Dr. {selectedDoctor.userId?.name}</span>
+                <ChevronRight size={14} className="text-slate-600" />
+                <span className="text-white">Dr. {selectedDoctor.userId?.name}</span>
               </>
-            ) : (
-              "Find the right specialist and schedule your visit in seconds."
             )}
+          </div>
+          <h1 className="text-3xl font-extrabold text-white tracking-tight">
+            {selectedDoctor ? "Select Consultation Time" : "Book Doctor Appointment"}
+          </h1>
+          <p className="text-sm text-slate-400 mt-1">
+            {selectedDoctor 
+              ? "Choose your preferred date and verified time slot" 
+              : "Search by specialist, department, or doctor name"}
           </p>
         </div>
       </div>
@@ -129,26 +139,26 @@ const BookingCalendar = () => {
       {!selectedDoctor ? (
         <>
           {/* Filters Section */}
-          <div className="bg-[#1f2937] border border-gray-800 rounded-2xl p-4 md:p-6 shadow-xl space-y-4">
+          <div className="bg-[#0e172c]/90 border border-slate-800/80 rounded-2xl p-5 shadow-xl space-y-4 backdrop-blur-sm">
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="relative flex-1">
-                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" />
+                <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" />
                 <input
                   type="text"
                   placeholder="Search doctors by name..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full bg-[#111827] border border-gray-700 rounded-xl pl-12 pr-4 py-3 text-sm text-gray-200 outline-none focus:border-emerald-500 transition-all"
+                  className="w-full bg-[#090f1d] border border-slate-700/80 rounded-xl pl-12 pr-4 py-3 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 transition-all"
                 />
               </div>
               
               <div className="flex flex-wrap gap-4">
                 <div className="relative">
-                  <Filter size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <Filter size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-teal-400 pointer-events-none" />
                   <select
                     value={filterDept}
                     onChange={(e) => setFilterDept(e.target.value)}
-                    className="bg-[#111827] border border-gray-700 rounded-xl pl-10 pr-8 py-3 text-sm text-gray-200 outline-none focus:border-emerald-500 appearance-none cursor-pointer min-w-[180px]"
+                    className="bg-[#090f1d] border border-slate-700/80 rounded-xl pl-10 pr-8 py-3 text-sm text-slate-200 outline-none focus:border-teal-500 appearance-none cursor-pointer min-w-[190px]"
                   >
                     {departments.map(dept => (
                       <option key={dept} value={dept}>{dept}</option>
@@ -157,11 +167,11 @@ const BookingCalendar = () => {
                 </div>
 
                 <div className="relative">
-                  <Stethoscope size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
+                  <Stethoscope size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-teal-400 pointer-events-none" />
                   <select
                     value={filterSpec}
                     onChange={(e) => setFilterSpec(e.target.value)}
-                    className="bg-[#111827] border border-gray-700 rounded-xl pl-10 pr-8 py-3 text-sm text-gray-200 outline-none focus:border-emerald-500 appearance-none cursor-pointer min-w-[180px]"
+                    className="bg-[#090f1d] border border-slate-700/80 rounded-xl pl-10 pr-8 py-3 text-sm text-slate-200 outline-none focus:border-teal-500 appearance-none cursor-pointer min-w-[190px]"
                   >
                     {specializations.map(spec => (
                       <option key={spec} value={spec}>{spec}</option>
@@ -183,18 +193,18 @@ const BookingCalendar = () => {
                 />
               ))
             ) : (
-              <div className="col-span-full py-20 text-center bg-[#1f2937] border border-dashed border-gray-800 rounded-2xl">
-                <div className="inline-flex p-4 rounded-full bg-gray-800/50 text-gray-500 mb-4">
-                  <Search size={32} />
+              <div className="col-span-full py-20 text-center bg-[#0e172c]/90 border border-dashed border-slate-800 rounded-2xl backdrop-blur-sm">
+                <div className="inline-flex p-4 rounded-2xl bg-teal-500/10 text-teal-400 mb-4 border border-teal-500/20">
+                  <Search size={28} />
                 </div>
-                <h3 className="text-lg font-medium text-white">No doctors found</h3>
-                <p className="text-gray-400 mt-1">Try adjusting your search or filters to find what you're looking for.</p>
+                <h3 className="text-base font-bold text-white">No doctors found</h3>
+                <p className="text-xs text-slate-400 mt-1 max-w-sm mx-auto">Try adjusting your filters or search keywords to find an available specialist.</p>
               </div>
             )}
           </div>
         </>
       ) : (
-        <div className="space-y-12">
+        <div className="space-y-10">
           {/* Step 1 & 2: Doctor Details & Date Selection */}
           <DoctorDetailsPanel 
             doctor={selectedDoctor} 
@@ -218,15 +228,15 @@ const BookingCalendar = () => {
           {selectedTime && (
             <div className="max-w-2xl mx-auto">
               {bookMutation.isSuccess && (
-                <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-3 text-emerald-400 animate-in fade-in slide-in-from-top-4">
-                  <CheckCircle2 size={20} />
-                  <p className="font-medium">Appointment booked successfully! Redirecting...</p>
+                <div className="mb-6 p-4 bg-emerald-500/10 border border-emerald-500/25 rounded-2xl flex items-center gap-3 text-emerald-300 animate-in fade-in slide-in-from-top-4 shadow-lg">
+                  <CheckCircle2 size={20} className="text-emerald-400 shrink-0" />
+                  <p className="font-semibold text-sm">Appointment confirmed successfully! Redirecting...</p>
                 </div>
               )}
               {bookMutation.isError && (
-                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-400 animate-in fade-in slide-in-from-top-4">
-                  <XCircle size={20} />
-                  <p className="font-medium">{bookMutation.error.response?.data?.message || "Booking failed. Please try again."}</p>
+                <div className="mb-6 p-4 bg-rose-500/10 border border-rose-500/25 rounded-2xl flex items-center gap-3 text-rose-300 animate-in fade-in slide-in-from-top-4 shadow-lg">
+                  <XCircle size={20} className="text-rose-400 shrink-0" />
+                  <p className="font-semibold text-sm">{bookMutation.error.response?.data?.message || "Booking failed. Please try another slot."}</p>
                 </div>
               )}
               
@@ -247,62 +257,4 @@ const BookingCalendar = () => {
   );
 };
 
-// Simple icon wrapper for the select components
-const Stethoscope = ({ size, className }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3" />
-    <path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4" />
-    <circle cx="20" cy="10" r="2" />
-  </svg>
-);
-
-const XCircle = ({ size, className }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <circle cx="12" cy="12" r="10" />
-    <path d="m15 9-6 6" />
-    <path d="m9 9 6 6" />
-  </svg>
-);
-
-const CheckCircle2 = ({ size, className }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    width={size} 
-    height={size} 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
-    className={className}
-  >
-    <circle cx="12" cy="12" r="10" />
-    <path d="m9 12 2 2 4-4" />
-  </svg>
-);
-
 export default BookingCalendar;
-
