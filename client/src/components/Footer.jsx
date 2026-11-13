@@ -1,7 +1,7 @@
 export default function Footer() {
   return (
     <footer
-      className="w-full bg-slate-900 text-slate-400 text-sm py-8 px-6 shadow-inner mt-auto border-t border-slate-800"
+      className="w-full bg-[#070c18]/90 text-slate-400 text-sm py-8 px-6 mt-auto border-t border-slate-800/80 backdrop-blur-md"
       id="contact"
     >
       <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
@@ -12,16 +12,16 @@ export default function Footer() {
           </span>
         </p>
 
-        <p className="order-3 md:order-2 text-center">
+        <p className="order-3 md:order-2 text-center text-slate-500">
           &copy; {new Date().getFullYear()} Hospital Management System. All rights reserved.
         </p>
 
         <div className="flex gap-6 order-1 md:order-3">
           <a
-            href="https://github.com/EndriasEshetu/Web-Team-Project"
+            href="https://github.com/kenenisabeyan/HM-System"
             target="_blank"
             rel="noreferrer"
-            className="hover:text-white transition-colors font-medium"
+            className="text-slate-300 hover:text-teal-400 transition-colors font-medium"
           >
             GitHub Repo
           </a>
@@ -29,7 +29,7 @@ export default function Footer() {
             href="https://www.linkedin.com/in/endrias-eshetu"
             target="_blank"
             rel="noreferrer"
-            className="hover:text-white transition-colors font-medium"
+            className="text-slate-300 hover:text-teal-400 transition-colors font-medium"
           >
             LinkedIn
           </a>
